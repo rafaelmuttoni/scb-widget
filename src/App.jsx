@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 function Message({ sender, content }) {
   const isBot = sender === 'bot';
@@ -18,10 +18,10 @@ function Message({ sender, content }) {
     </div>
   );
 }
-
 function App() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
+  const chatContainerRef = useRef(null);
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
@@ -60,14 +60,30 @@ function App() {
     return botResponses[randomIndex];
   };
 
+  useEffect(() => {
+    const chatContainer = chatContainerRef?.current;
+    if (chatContainer) {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+  }, [messages.length]);
+
   return (
     <div className="h-screen flex flex-col justify-end items-end p-4 space-y-4">
+      <button
+        className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg"
+        onClick={toggleChat}
+      >
+        {isOpen ? 'X' : 'Chat'}
+      </button>
       {isOpen && (
         <div
           className={`origin-bottom-right transition-transform duration-300 w-96 h-80 bg-white p-4 rounded-lg shadow-lg flex flex-col space-y-4 absolute bottom-16 right-4 overflow-hidden`}
         >
           <h2 className="text-xl font-semibold">Chatbot</h2>
-          <div className="flex-1 bg-gray-100 p-4 rounded-lg max-h-60 overflow-y-auto">
+          <div
+            className="flex-1 bg-gray-100 p-4 rounded-lg max-h-60 overflow-y-auto"
+            ref={chatContainerRef}
+          >
             {messages.map((message, index) => (
               <Message
                 key={index}
@@ -103,12 +119,6 @@ function App() {
           </div>
         </div>
       )}
-      <button
-        className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg"
-        onClick={toggleChat}
-      >
-        {isOpen ? 'X' : 'Chat'}
-      </button>
     </div>
   );
 }
