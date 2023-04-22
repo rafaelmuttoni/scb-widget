@@ -1,10 +1,10 @@
 import React from 'react';
-import './App.css';
+
 
 function App() {
   return (
-    <div className="widget-button-container">
-      <button className="widget-button">Click me</button>
+    <div className="fixed bottom['20px'] right['20px'] z-50 text-3xl">
+      <button className="bg-blue-500 text-white">Click me</button>
     </div>
   );
 }
