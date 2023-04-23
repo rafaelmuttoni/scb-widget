@@ -22,42 +22,43 @@ function App() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const chatContainerRef = useRef(null);
+  const ws = useRef(null);
+
+  // Create a new WebSocket connection when the chat is opened
+  useEffect(() => {
+    // Set up the WebSocket connection
+    ws.current = new WebSocket('ws://localhost:3001/chat');
+  
+    // Add a listener for messages received over the WebSocket connection
+    ws.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          sender: data.sender,
+          content: data.message,
+        },
+      ]);
+    };
+  
+    return () => {
+      // Clean up the WebSocket connection when the component unmounts
+      ws.current.close();
+    };
+  }, []);
+  
+
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
   };
 
   const handleSendMessage = (message) => {
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      {
-        sender: 'person',
-        content: message,
-      },
-    ]);
-
-    const botResponse = getBotResponse();
-    setTimeout(() => {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          sender: 'bot',
-          content: botResponse,
-        },
-      ]);
-    }, 1000);
-  };
-
-  const getBotResponse = () => {
-    const botResponses = [
-      'I see, tell me more',
-      'Interesting, please go on',
-      'I understand, can you elaborate?',
-      'I hear what you are saying',
-      'That is a good point, thank you for sharing',
-    ];
-    const randomIndex = Math.floor(Math.random() * botResponses.length);
-    return botResponses[randomIndex];
+    // Send the message over the WebSocket connection
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      ws.current.send(message);
+    }
+  
   };
 
   useEffect(() => {
